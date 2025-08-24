@@ -32,7 +32,7 @@ export function serializeObject<T extends Record<string, any>>(obj: T): T {
   
   const serialized: any = {};
   for (const key in obj) {
-    const value = obj[key];
+    const value = (obj as any)[key];
     if (value instanceof Date) {
       serialized[key] = value.toISOString();
     } else if (value && typeof value === 'object') {
