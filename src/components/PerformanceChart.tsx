@@ -308,7 +308,8 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
           syntheticData.push({
             date: date.toISOString(),
             value: currentValue,
-            pnl: currentValue - 100000
+            pnl: currentValue - 100000,
+            cumulativeReturn: ((currentValue - 100000) / 100000) * 100
           });
         }
         return { ...trader, data: syntheticData };
@@ -333,7 +334,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   }, [chartData]);
 
   const handleTimeframeChange = (newTimeframe: string) => {
-    setSelectedTimeframe(newTimeframe);
+    setSelectedTimeframe(newTimeframe as '7d' | '30d' | '90d' | '1y');
     onTimeframeChange?.(newTimeframe);
   };
 
