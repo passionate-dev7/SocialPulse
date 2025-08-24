@@ -149,9 +149,9 @@ export const usePnL = (timeframe?: '1d' | '7d' | '30d' | 'all') => {
   return useQuery({
     queryKey: [...queryKeys.portfolio.pnl(), timeframe],
     queryFn: async () => {
+      const params = timeframe ? `?timeframe=${timeframe}` : '';
       const response = await apiClient.get<ApiResponse<PnLData>>(
-        '/portfolio/pnl',
-        timeframe ? { timeframe } : undefined
+        `/portfolio/pnl${params}`
       );
       return response.data;
     },
@@ -167,11 +167,15 @@ export const useTradeHistory = (
   limit = 50
 ) => {
   return useQuery({
-    queryKey: [...queryKeys.portfolio.trades(), filters, limit],
+    queryKey: ['portfolio', 'trades', filters, limit],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters) Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined) params.append(key, String(value));
+      });
+      params.append('limit', String(limit));
       const response = await apiClient.get<ApiResponse<PaginatedResponse<Trade>>>(
-        '/portfolio/trades',
-        { ...filters, limit }
+        `/portfolio/trades?${params}`
       );
       return response.data;
     },
@@ -183,7 +187,7 @@ export const useTradeHistory = (
 // Get portfolio summary statistics
 export const usePortfolioSummary = () => {
   return useQuery({
-    queryKey: [...queryKeys.portfolio.all, 'summary'],
+    queryKey: [...queryKeys.portfolio.all(), 'summary'],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<{
         totalValue: number;
@@ -284,7 +288,7 @@ export const useClosePosition = () => {
       });
       
       queryClient.invalidateQueries({
-        queryKey: queryKeys.portfolio.trades(),
+        queryKey: ['portfolio', 'trades'],
       });
     },
   });
@@ -358,7 +362,7 @@ export const useUpdatePositionSettings = () => {
 // Get portfolio performance analytics
 export const usePortfolioAnalytics = (timeRange: '7d' | '30d' | '90d' | '1y' = '30d') => {
   return useQuery({
-    queryKey: [...queryKeys.portfolio.all, 'analytics', timeRange],
+    queryKey: [...queryKeys.portfolio.all(), 'analytics', timeRange],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<{
         performance: Array<{
@@ -387,7 +391,7 @@ export const usePortfolioAnalytics = (timeRange: '7d' | '30d' | '90d' | '1y' = '
           pnl: number;
           pnlPercentage: number;
         }>;
-      }>>('/portfolio/analytics', { timeRange });
+      }>>(`/portfolio/analytics?timeRange=${timeRange}`);
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -398,7 +402,7 @@ export const usePortfolioAnalytics = (timeRange: '7d' | '30d' | '90d' | '1y' = '
 // Get risk metrics for the portfolio
 export const useRiskMetrics = () => {
   return useQuery({
-    queryKey: [...queryKeys.portfolio.all, 'risk'],
+    queryKey: [...queryKeys.portfolio.all(), 'risk'],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<{
         totalRisk: number;

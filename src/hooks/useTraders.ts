@@ -54,8 +54,8 @@ export const useTraders = (filters: LeaderboardFilters): UseTraders => {
             cumulativeReturn: Math.random() * 200 - 50
           })),
           isFollowing: Math.random() > 0.7,
-          createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-          lastActive: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
+          lastActive: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
         };
       });
 

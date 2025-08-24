@@ -93,8 +93,8 @@ const DashboardPage: React.FC = () => {
               strategy: 'Momentum',
               performance: [],
               isFollowing: true,
-              createdAt: new Date('2023-01-15'),
-              lastActive: new Date(),
+              createdAt: new Date('2023-01-15').toISOString(),
+              lastActive: new Date().toISOString(),
             },
             allocatedAmount: 10000,
             copyRatio: 0.8,
@@ -132,8 +132,8 @@ const DashboardPage: React.FC = () => {
               strategy: 'DeFi',
               performance: [],
               isFollowing: false,
-              createdAt: new Date('2023-03-22'),
-              lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000),
+              createdAt: new Date('2023-03-22').toISOString(),
+              lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
             },
             allocatedAmount: 5000,
             copyRatio: 0.5,
@@ -161,14 +161,14 @@ const DashboardPage: React.FC = () => {
             asset: pair,
             side: Math.random() > 0.5 ? 'long' : 'short',
             entryPrice: Math.random() * 100000 + 1000,
-            exitPrice: Math.random() > 0.5 ? Math.random() * 100000 + 1000 : undefined,
+            exitPrice: Math.random() > 0.5 ? Math.random() * 100000 + 1000 : null,
             size: Math.random() * 5000 + 100,
-            pnl: Math.random() > 0.5 ? (Math.random() - 0.4) * 1000 : undefined,
-            pnlPercent: Math.random() > 0.5 ? (Math.random() - 0.4) * 15 : undefined,
+            pnl: Math.random() > 0.5 ? (Math.random() - 0.4) * 1000 : null,
+            pnlPercent: Math.random() > 0.5 ? (Math.random() - 0.4) * 15 : null,
             leverage: Math.floor(Math.random() * 5) + 1,
-            openedAt: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
-            closedAt: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 12 * 60 * 60 * 1000) : undefined,
-            timestamp: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+            openedAt: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+            closedAt: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 12 * 60 * 60 * 1000).toISOString() : null,
+            timestamp: Date.now() - Math.random() * 24 * 60 * 60 * 1000,
             status: Math.random() > 0.5 ? 'closed' : 'open',
           };
         });
@@ -560,7 +560,7 @@ const DashboardPage: React.FC = () => {
                               </div>
                             )}
                             <div className="text-sm text-gray-500">
-                              {trade.openedAt ? formatTimeAgo(trade.openedAt) : 'Unknown'}
+                              {trade.openedAt ? formatTimeAgo(new Date(trade.openedAt)) : 'Unknown'}
                             </div>
                           </div>
                         </div>

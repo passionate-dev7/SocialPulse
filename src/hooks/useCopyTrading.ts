@@ -270,7 +270,7 @@ export const useCopyTrades = () => {
 // Get copy trading statistics
 export const useCopyTradingStats = () => {
   return useQuery({
-    queryKey: [...queryKeys.copyTrading.all, 'stats'],
+    queryKey: [...queryKeys.copyTrading.all(), 'stats'],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<{
         totalFollowed: number;
@@ -290,12 +290,12 @@ export const useCopyTradingStats = () => {
 // Get copy trade history
 export const useCopyTradeHistory = (limit = 50) => {
   return useQuery({
-    queryKey: [...queryKeys.copyTrading.all, 'history', limit],
+    queryKey: [...queryKeys.copyTrading.all(), 'history', limit],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<PaginatedResponse<Trade & {
         originalTraderAddress: string;
         copiedAt: string;
-      }>>>('/copy-trading/history', { limit });
+      }>>>(`/copy-trading/history?limit=${limit}`);
       return response.data;
     },
     staleTime: 30 * 1000, // 30 seconds

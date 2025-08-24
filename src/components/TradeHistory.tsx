@@ -37,12 +37,13 @@ const generateMockTrades = (count: number): Trade[] => {
       entryPrice,
       exitPrice,
       pnl,
-      timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      timestamp: Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000,
+      openedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
       status: isOpen ? 'open' : 'closed'
     });
   }
   
-  return trades.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  return trades.sort((a, b) => b.timestamp - a.timestamp);
 };
 
 const formatCurrency = (value: number, compact = false) => {
@@ -61,8 +62,8 @@ const formatCurrency = (value: number, compact = false) => {
   }).format(value);
 };
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
+const formatDate = (timestamp: number | string) => {
+  const date = new Date(timestamp);
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -310,7 +311,7 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
                     {trade.exitPrice ? formatCurrency(trade.exitPrice) : '-'}
                   </td>
                   <td className="px-4 py-3 text-sm whitespace-nowrap">
-                    {trade.pnl !== undefined ? (
+                    {trade.pnl !== undefined && trade.pnl !== null ? (
                       <span className={`font-medium ${
                         trade.pnl > 0 ? 'text-emerald-600' : trade.pnl < 0 ? 'text-red-600' : 'text-gray-500'
                       }`}>

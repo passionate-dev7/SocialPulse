@@ -27,8 +27,8 @@ export interface Trader {
   strategy: string;
   performance: PerformanceData[];
   isFollowing?: boolean;
-  createdAt: Date;
-  lastActive: Date;
+  createdAt: string;
+  lastActive: string;
 }
 
 // Leaderboard specific types
@@ -73,14 +73,14 @@ export interface Trade {
   asset: string;
   side: 'long' | 'short';
   entryPrice: number;
-  exitPrice?: number;
+  exitPrice?: number | null;
   size: number;
-  pnl?: number;
-  pnlPercent?: number;
+  pnl?: number | null;
+  pnlPercent?: number | null;
   leverage?: number;
-  openedAt?: Date;
-  closedAt?: Date;
-  timestamp: string;
+  openedAt: string;
+  closedAt?: string | null;
+  timestamp: number;
   status: 'open' | 'closed' | 'liquidated';
 }
 

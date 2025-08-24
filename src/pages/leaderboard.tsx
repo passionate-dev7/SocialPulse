@@ -440,49 +440,58 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ initialTraders }) => 
 };
 
 export const getServerSideProps: GetServerSideProps<LeaderboardPageProps> = async () => {
-  // Pre-load initial traders data for faster initial render
-  const initialTraders: Trader[] = Array.from({ length: 20 }, (_, i) => ({
-    id: `initial-trader-${i + 1}`,
-    address: `0x${Math.random().toString(16).substr(2, 40)}`,
-    username: `Trader${i + 1}`,
-    name: `Trader${i + 1}`,
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`,
-    verified: Math.random() > 0.7,
-    isVerified: Math.random() > 0.7,
-    rank: i + 1,
-    totalPnL: (Math.random() - 0.3) * 100000,
-    pnl: (Math.random() - 0.3) * 100000,
-    roi: Math.random() * 40 + 50,
-    totalReturn: Math.random() * 40 + 50,
-    monthlyReturn: (Math.random() * 40 + 50) / 12,
-    winRate: Math.random() * 40 + 50,
-    totalTrades: Math.floor(Math.random() * 1000) + 100,
-    followersCount: Math.floor(Math.random() * 5000),
-    followers: Math.floor(Math.random() * 5000),
-    copiedVolume: Math.random() * 500000,
-    aum: Math.random() * 500000,
-    riskScore: Math.floor(Math.random() * 10) + 1,
-    sharpeRatio: Math.random() * 3,
-    maxDrawdown: Math.random() * 30,
-    avgHoldTime: Math.random() * 24,
-    preferredPairs: ['BTC/USD', 'ETH/USD', 'SOL/USD'].slice(0, Math.floor(Math.random() * 3) + 1),
-    strategy: ['DeFi Yield', 'Swing Trading', 'Arbitrage', 'Momentum', 'Mean Reversion'][i % 5],
-    performance: Array.from({ length: 30 }, (_, j) => ({
-      date: new Date(Date.now() - (29 - j) * 24 * 60 * 60 * 1000).toISOString(),
-      pnl: Math.random() * 5000 - 2500,
-      value: Math.random() * 100000 + 50000,
-      cumulativeReturn: Math.random() * 50 - 25
-    })),
-    isFollowing: false,
-    createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-    lastActive: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-  }));
+  try {
+    // Try to fetch real data from API
+    const { fetchTopTraders, serializeForNextJS } = await import('../utils/api');
+    const traders = await fetchTopTraders(20);
+    
+    return {
+      props: {
+        initialTraders: serializeForNextJS(traders),
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching traders:', error);
+    
+    // Fallback to mock data if API fails
+    const initialTraders: Trader[] = Array.from({ length: 20 }, (_, i) => ({
+      id: `trader-${i + 1}`,
+      address: `0x${(i + 1).toString(16).padStart(40, '0')}`,
+      username: `Trader${i + 1}`,
+      name: `Trader ${i + 1}`,
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`,
+      verified: Math.random() > 0.7,
+      isVerified: Math.random() > 0.7,
+      rank: i + 1,
+      totalPnL: (Math.random() - 0.3) * 100000,
+      pnl: (Math.random() - 0.3) * 100000,
+      roi: Math.random() * 40 + 50,
+      totalReturn: Math.random() * 40 + 50,
+      monthlyReturn: (Math.random() * 40 + 50) / 12,
+      winRate: Math.random() * 40 + 50,
+      totalTrades: Math.floor(Math.random() * 1000) + 100,
+      followersCount: Math.floor(Math.random() * 5000),
+      followers: Math.floor(Math.random() * 5000),
+      copiedVolume: Math.random() * 500000,
+      aum: Math.random() * 500000,
+      riskScore: Math.floor(Math.random() * 10) + 1,
+      sharpeRatio: Math.random() * 3,
+      maxDrawdown: Math.random() * 30,
+      avgHoldTime: Math.random() * 24,
+      preferredPairs: ['BTC-PERP', 'ETH-PERP', 'SOL-PERP'],
+      strategy: ['DeFi Yield', 'Swing Trading', 'Arbitrage', 'Momentum', 'Mean Reversion'][i % 5],
+      performance: [],
+      isFollowing: false,
+      createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
+      lastActive: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+    }));
 
-  return {
-    props: {
-      initialTraders,
-    },
-  };
+    return {
+      props: {
+        initialTraders,
+      },
+    };
+  }
 };
 
 export default LeaderboardPage;

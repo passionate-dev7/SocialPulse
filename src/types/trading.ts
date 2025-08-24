@@ -46,18 +46,23 @@ export interface PerformancePoint {
 
 export interface Trade {
   id: string;
-  traderAddress: string;
-  coin: string;
+  traderId?: string;
+  traderAddress?: string;
+  asset?: string;
+  coin?: string;
+  pair?: string;
   side: 'long' | 'short';
   size: number;
   leverage: number;
   entryPrice: number;
   exitPrice?: number;
   pnl?: number;
+  pnlPercent?: number;
   status: 'open' | 'closed' | 'liquidated';
-  openedAt: string;
-  closedAt?: string;
-  fees: number;
+  openedAt: Date | string;
+  closedAt?: Date | string;
+  timestamp?: number;
+  fees?: number;
 }
 
 export interface CopySettings {
@@ -125,19 +130,25 @@ export interface FundingRate {
 }
 
 export interface Position {
-  coin: string;
+  id?: string;
+  coin?: string;
+  pair?: string;
   side: 'long' | 'short';
   size: number;
   leverage: number;
   entryPrice: number;
-  markPrice: number;
-  unrealizedPnl: number;
+  currentPrice?: number;
+  markPrice?: number;
+  pnl?: number;
+  pnlPercent?: number;
+  unrealizedPnl?: number;
   liquidationPrice: number;
-  margin: number;
-  marginRatio: number;
+  margin?: number;
+  marginRatio?: number;
+  notional?: number;
   stopLoss?: number;
   takeProfit?: number;
-  openedAt: string;
+  openedAt?: Date | string;
 }
 
 export interface Balance {

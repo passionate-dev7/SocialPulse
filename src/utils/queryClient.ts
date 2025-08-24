@@ -1,8 +1,6 @@
 // React Query client configuration for SocialPulse platform
 
 import { QueryClient, DefaultOptions } from '@tanstack/react-query';
-import { ApiError } from './api';
-
 // Default options for all queries
 const defaultOptions: DefaultOptions = {
   queries: {
@@ -11,10 +9,10 @@ const defaultOptions: DefaultOptions = {
     gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
-    retry: (failureCount, error) => {
+    retry: (failureCount, error: any) => {
       // Don't retry on 4xx errors except 429 (rate limit)
-      if (error instanceof ApiError) {
-        const status = error.status;
+      if (error?.response?.status) {
+        const status = error.response.status;
         if (status && status >= 400 && status < 500 && status !== 429) {
           return false;
         }
@@ -41,9 +39,9 @@ export const queryClient = new QueryClient({
 export const handleQueryError = (error: unknown) => {
   console.error('React Query Error:', error);
   
-  if (error instanceof ApiError) {
+  if ((error as any)?.response?.status) {
     // Handle specific API errors
-    switch (error.status) {
+    switch ((error as any).response.status) {
       case 401:
         // Redirect to login
         window.location.href = '/login';
@@ -153,7 +151,7 @@ export const prefetchCommonData = async () => {
   await queryClient.prefetchQuery({
     queryKey: ['traders', 'list', {}],
     queryFn: () => import('./api').then(({ apiClient }) => 
-      apiClient.get('/traders/leaderboard', { limit: 10 })
+      apiClient.get('/traders/leaderboard?limit=10')
     ),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });

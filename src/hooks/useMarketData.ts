@@ -19,11 +19,11 @@ export const useMarkets = (filters?: {
   sortOrder?: 'asc' | 'desc';
 }) => {
   return useQuery({
-    queryKey: queryKeys.markets.lists(),
+    queryKey: ['markets', filters],
     queryFn: async () => {
+      const params = new URLSearchParams(filters as any).toString();
       const response = await apiClient.get<ApiResponse<Market[]>>(
-        '/markets',
-        filters
+        `/markets${params ? `?${params}` : ''}`
       );
       return response.data;
     },
@@ -36,7 +36,7 @@ export const useMarkets = (filters?: {
 // Get specific market details
 export const useMarket = (coin: string | undefined) => {
   return useQuery({
-    queryKey: queryKeys.markets.detail(coin || ''),
+    queryKey: ['market', coin || '', 'detail'],
     queryFn: async () => {
       if (!coin) throw new Error('Coin is required');
       
@@ -64,13 +64,12 @@ export const useOrderBook = (
 
   // Initial fetch
   const { data: initialData, isLoading: initialLoading, error: initialError } = useQuery({
-    queryKey: queryKeys.markets.orderBook(coin || ''),
+    queryKey: ['market', coin || '', 'orderBook'],
     queryFn: async () => {
       if (!coin) throw new Error('Coin is required');
       
       const response = await apiClient.get<ApiResponse<OrderBook>>(
-        `/markets/${coin}/orderbook`,
-        { depth }
+        `/markets/${coin}/orderbook${depth ? `?depth=${depth}` : ''}`
       );
       return response.data;
     },
@@ -132,13 +131,15 @@ export const useCandles = (
 
   // Initial historical data fetch
   const query = useQuery({
-    queryKey: queryKeys.markets.candles(coin || '', interval),
+    queryKey: ['market', coin || '', 'candles', interval],
     queryFn: async () => {
       if (!coin) throw new Error('Coin is required');
       
+      const params = new URLSearchParams();
+      if (interval) params.append('interval', interval);
+      if (limit) params.append('limit', limit.toString());
       const response = await apiClient.get<ApiResponse<Candle[]>>(
-        `/markets/${coin}/candles`,
-        { interval, limit }
+        `/markets/${coin}/candles${params.toString() ? `?${params}` : ''}`
       );
       return response.data;
     },
@@ -207,11 +208,11 @@ export const useCandles = (
 // Funding rates for perpetual contracts
 export const useFundingRates = (coins?: string[]) => {
   return useQuery({
-    queryKey: queryKeys.markets.fundingRates(),
+    queryKey: ['market', 'fundingRates'],
     queryFn: async () => {
+      const params = coins ? `?coins=${coins.join(',')}` : '';
       const response = await apiClient.get<ApiResponse<FundingRate[]>>(
-        '/markets/funding-rates',
-        coins ? { coins: coins.join(',') } : undefined
+        `/markets/funding-rates${params}`
       );
       return response.data;
     },
@@ -270,7 +271,7 @@ export const usePriceUpdates = (coins: string[]) => {
 // Market statistics and 24h data
 export const useMarketStats = () => {
   return useQuery({
-    queryKey: [...queryKeys.markets.all, 'stats'],
+    queryKey: ['market', 'stats'],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<{
         totalVolume24h: number;
@@ -290,7 +291,7 @@ export const useMarketStats = () => {
 // Trading pairs and their relationships
 export const useTradingPairs = () => {
   return useQuery({
-    queryKey: [...queryKeys.markets.all, 'pairs'],
+    queryKey: ['market', 'pairs'],
     queryFn: async () => {
       const response = await apiClient.get<ApiResponse<{
         coin: string;
@@ -310,7 +311,7 @@ export const useTradingPairs = () => {
 // Market depth analysis
 export const useMarketDepth = (coin: string | undefined) => {
   return useQuery({
-    queryKey: [...queryKeys.markets.detail(coin || ''), 'depth'],
+    queryKey: ['market', coin || '', 'depth'],
     queryFn: async () => {
       if (!coin) throw new Error('Coin is required');
       

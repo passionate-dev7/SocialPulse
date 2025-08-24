@@ -128,9 +128,9 @@ const TraderProfilePage: React.FC<TraderProfilePageProps> = ({ trader: initialTr
                   </div>
                   <p className="text-gray-600 mb-2">{formatAddress(trader.address)}</p>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span>Joined {formatTimeAgo(trader.createdAt)}</span>
+                    <span>Joined {formatTimeAgo(new Date(trader.createdAt))}</span>
                     <span>•</span>
-                    <span>Last active {formatTimeAgo(trader.lastActive)}</span>
+                    <span>Last active {formatTimeAgo(new Date(trader.lastActive))}</span>
                   </div>
                 </div>
               </div>
@@ -388,7 +388,7 @@ const TraderProfilePage: React.FC<TraderProfilePageProps> = ({ trader: initialTr
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatTimeAgo(trade.openedAt || new Date())}
+                              {formatTimeAgo(new Date(trade.openedAt))}
                             </td>
                           </tr>
                         ))}
@@ -485,7 +485,10 @@ export const getServerSideProps: GetServerSideProps<TraderProfilePageProps> = as
   const { address } = context.params!;
   
   try {
-    // Mock API call - replace with actual data fetching
+    // Try to fetch real data from API
+    const { fetchUserTrades, serializeForNextJS } = await import('../../utils/api');
+    
+    // Generate trader data (in production, fetch from API)
     const trader: Trader = {
       id: `trader-${address}`,
       address: address as string,
@@ -510,7 +513,7 @@ export const getServerSideProps: GetServerSideProps<TraderProfilePageProps> = as
       sharpeRatio: Math.random() * 4,
       maxDrawdown: Math.random() * 25 + 5,
       avgHoldTime: Math.random() * 48 + 2,
-      preferredPairs: ['BTC/USD', 'ETH/USD', 'SOL/USD'],
+      preferredPairs: ['BTC-PERP', 'ETH-PERP', 'SOL-PERP'],
       strategy: 'Swing Trading',
       performance: Array.from({ length: 30 }, (_, j) => ({
         date: new Date(Date.now() - (29 - j) * 24 * 60 * 60 * 1000).toISOString(),
@@ -519,12 +522,12 @@ export const getServerSideProps: GetServerSideProps<TraderProfilePageProps> = as
         cumulativeReturn: Math.random() * 50 - 25
       })),
       isFollowing: false,
-      createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-      lastActive: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(), // Serialize to string
+      lastActive: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(), // Serialize to string
     };
 
     const recentTrades: Trade[] = Array.from({ length: 20 }, (_, i) => {
-      const pair = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'AVAX/USD'][Math.floor(Math.random() * 4)];
+      const pair = ['BTC-PERP', 'ETH-PERP', 'SOL-PERP', 'AVAX-PERP'][Math.floor(Math.random() * 4)];
       return {
         id: `trade-${i}`,
         traderId: trader.id,
@@ -532,25 +535,26 @@ export const getServerSideProps: GetServerSideProps<TraderProfilePageProps> = as
         asset: pair,
         side: Math.random() > 0.5 ? 'long' : 'short',
         entryPrice: Math.random() * 100000 + 1000,
-        exitPrice: Math.random() > 0.3 ? Math.random() * 100000 + 1000 : undefined,
+        exitPrice: Math.random() > 0.3 ? Math.random() * 100000 + 1000 : null,
         size: Math.random() * 10000 + 100,
-        pnl: Math.random() > 0.3 ? (Math.random() - 0.4) * 5000 : undefined,
-        pnlPercent: Math.random() > 0.3 ? (Math.random() - 0.4) * 20 : undefined,
+        pnl: Math.random() > 0.3 ? (Math.random() - 0.4) * 5000 : null,
+        pnlPercent: Math.random() > 0.3 ? (Math.random() - 0.4) * 20 : null,
         leverage: Math.floor(Math.random() * 10) + 1,
-        openedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-        closedAt: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 6 * 24 * 60 * 60 * 1000) : undefined,
-        timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+        openedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(), // Serialize to string
+        closedAt: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 6 * 24 * 60 * 60 * 1000).toISOString() : null, // Serialize to string
+        timestamp: Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000,
         status: Math.random() > 0.3 ? 'closed' : Math.random() > 0.1 ? 'open' : 'liquidated',
       };
     });
 
     return {
       props: {
-        trader,
-        recentTrades,
+        trader: serializeForNextJS(trader),
+        recentTrades: serializeForNextJS(recentTrades),
       },
     };
   } catch (error) {
+    console.error('Error fetching trader data:', error);
     return {
       props: {
         trader: null,
