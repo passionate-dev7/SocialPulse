@@ -1,6 +1,5 @@
 import React from 'react';
-import { css } from '@emotion/react';
-import styled from '@emotion/styled';
+import { CheckCircle2, TrendingUp, Users } from 'lucide-react';
 import { Trader } from '../types';
 import { useFollowTrader, useUnfollowTrader } from '../hooks/useTraders';
 
@@ -8,149 +7,6 @@ interface TraderCardProps {
   trader: Trader;
   onCopyTrade?: (trader: Trader) => void;
 }
-
-const Card = styled.div`
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-  transition: transform 0.2s, box-shadow 0.2s;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  }
-
-  @media (max-width: 768px) {
-    padding: 16px;
-  }
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-`;
-
-const Avatar = styled.img`
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  margin-right: 12px;
-  object-fit: cover;
-`;
-
-const TraderInfo = styled.div`
-  flex: 1;
-`;
-
-const TraderName = styled.h3`
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const VerificationBadge = styled.span`
-  color: #059669;
-  font-size: 16px;
-  display: inline-flex;
-  align-items: center;
-`;
-
-const FollowerCount = styled.p`
-  margin: 4px 0 0 0;
-  font-size: 14px;
-  color: #6b7280;
-`;
-
-const MetricsGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-`;
-
-const MetricItem = styled.div`
-  text-align: center;
-`;
-
-const MetricLabel = styled.div`
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 4px;
-  font-weight: 500;
-`;
-
-const MetricValue = styled.div<{ positive?: boolean }>`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${props => props.positive === false ? '#dc2626' : props.positive ? '#059669' : '#111827'};
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-`;
-
-const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  ${props => props.variant === 'primary' ? css`
-    background: #3b82f6;
-    color: white;
-    
-    &:hover:not(:disabled) {
-      background: #2563eb;
-    }
-  ` : css`
-    background: #f3f4f6;
-    color: #374151;
-    border: 1px solid #d1d5db;
-    
-    &:hover:not(:disabled) {
-      background: #e5e7eb;
-    }
-  `}
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const MiniChart = styled.div`
-  height: 60px;
-  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-  border-radius: 8px;
-  margin: 16px 0;
-  display: flex;
-  align-items: end;
-  padding: 8px;
-  position: relative;
-  overflow: hidden;
-`;
-
-const ChartBar = styled.div<{ height: number }>`
-  flex: 1;
-  background: rgba(255, 255, 255, 0.3);
-  margin: 0 1px;
-  border-radius: 1px;
-  height: ${props => props.height}%;
-  transition: height 0.3s ease;
-`;
 
 const formatCurrency = (value: number) => {
   if (value >= 1000000) {
@@ -188,82 +44,109 @@ export const TraderCard: React.FC<TraderCardProps> = ({ trader, onCopyTrade }) =
   const range = maxPnl - minPnl;
 
   return (
-    <Card role="article" aria-label={`Trader card for ${trader.name}`}>
-      <Header>
-        <Avatar 
+    <div 
+      className="bg-white rounded-xl p-5 md:p-4 shadow-lg border border-gray-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+      role="article" 
+      aria-label={`Trader card for ${trader.name}`}
+    >
+      {/* Header */}
+      <div className="flex items-center mb-4">
+        <img 
           src={trader.avatar} 
           alt={`${trader.name}'s avatar`}
+          className="w-12 h-12 rounded-full mr-3 object-cover"
           onError={(e) => {
             (e.target as HTMLImageElement).src = '/default-avatar.png';
           }}
         />
-        <TraderInfo>
-          <TraderName>
+        <div className="flex-1">
+          <h3 className="m-0 text-lg font-semibold text-gray-900 flex items-center gap-2">
             {trader.name}
             {trader.isVerified && (
-              <VerificationBadge title="Verified trader">
-                ✓
-              </VerificationBadge>
+              <div title="Verified trader">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              </div>
             )}
-          </TraderName>
-          <FollowerCount>{trader.followers.toLocaleString()} followers</FollowerCount>
-        </TraderInfo>
-      </Header>
-
-      <MetricsGrid>
-        <MetricItem>
-          <MetricLabel>PnL</MetricLabel>
-          <MetricValue positive={trader.pnl > 0}>
-            {formatCurrency(trader.pnl)}
-          </MetricValue>
-        </MetricItem>
-        <MetricItem>
-          <MetricLabel>ROI</MetricLabel>
-          <MetricValue positive={trader.roi > 0}>
-            {formatPercentage(trader.roi)}
-          </MetricValue>
-        </MetricItem>
-        <MetricItem>
-          <MetricLabel>Win Rate</MetricLabel>
-          <MetricValue>{trader.winRate.toFixed(1)}%</MetricValue>
-        </MetricItem>
-        <MetricItem>
-          <MetricLabel>Sharpe Ratio</MetricLabel>
-          <MetricValue>{trader.sharpeRatio.toFixed(2)}</MetricValue>
-        </MetricItem>
-      </MetricsGrid>
-
-      <MiniChart aria-label="Performance chart">
-        {chartData.map((value, index) => (
-          <ChartBar
-            key={index}
-            height={range > 0 ? ((value - minPnl) / range) * 100 : 50}
-            title={`Day ${index + 1}: ${formatCurrency(value)}`}
-          />
-        ))}
-      </MiniChart>
-
-      <div>
-        <MetricLabel>AUM: {formatCurrency(trader.aum)} • Strategy: {trader.strategy}</MetricLabel>
+          </h3>
+          <p className="mt-1 mb-0 text-sm text-gray-500 flex items-center gap-1">
+            <Users className="w-3 h-3" />
+            {trader.followers.toLocaleString()} followers
+          </p>
+        </div>
       </div>
 
-      <ButtonGroup>
-        <Button
-          variant="secondary"
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="text-center">
+          <div className="text-xs text-gray-500 mb-1 font-medium">PnL</div>
+          <div className={`text-base font-semibold ${
+            trader.pnl > 0 ? 'text-emerald-600' : trader.pnl < 0 ? 'text-red-600' : 'text-gray-900'
+          }`}>
+            {formatCurrency(trader.pnl)}
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-xs text-gray-500 mb-1 font-medium">ROI</div>
+          <div className={`text-base font-semibold ${
+            trader.roi > 0 ? 'text-emerald-600' : trader.roi < 0 ? 'text-red-600' : 'text-gray-900'
+          }`}>
+            {formatPercentage(trader.roi)}
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-xs text-gray-500 mb-1 font-medium">Win Rate</div>
+          <div className="text-base font-semibold text-gray-900">{trader.winRate.toFixed(1)}%</div>
+        </div>
+        <div className="text-center">
+          <div className="text-xs text-gray-500 mb-1 font-medium">Sharpe Ratio</div>
+          <div className="text-base font-semibold text-gray-900">{trader.sharpeRatio.toFixed(2)}</div>
+        </div>
+      </div>
+
+      {/* Mini Chart */}
+      <div 
+        className="h-15 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg my-4 flex items-end p-2 relative overflow-hidden"
+        aria-label="Performance chart"
+      >
+        {chartData.map((value, index) => {
+          const height = range > 0 ? ((value - minPnl) / range) * 100 : 50;
+          return (
+            <div
+              key={index}
+              className="flex-1 bg-white bg-opacity-30 mx-px rounded-sm transition-all duration-300 ease-out"
+              style={{ height: `${height}%` }}
+              title={`Day ${index + 1}: ${formatCurrency(value)}`}
+            />
+          );
+        })}
+      </div>
+
+      {/* Strategy Info */}
+      <div className="mb-4">
+        <div className="text-xs text-gray-500 font-medium">
+          AUM: {formatCurrency(trader.aum)} • Strategy: {trader.strategy}
+        </div>
+      </div>
+
+      {/* Button Group */}
+      <div className="flex gap-2 mt-4">
+        <button
           onClick={handleFollowClick}
           disabled={false}
           aria-label={trader.isFollowing ? 'Unfollow trader' : 'Follow trader'}
+          className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-300 bg-gray-50 text-gray-700 transition-all duration-200 hover:bg-gray-100 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {trader.isFollowing ? 'Unfollow' : 'Follow'}
-        </Button>
-        <Button
-          variant="primary"
+        </button>
+        <button
           onClick={handleCopyTradeClick}
           aria-label="Copy trade this trader"
+          className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white transition-all duration-200 hover:bg-blue-700 flex items-center justify-center gap-1"
         >
+          <TrendingUp className="w-4 h-4" />
           Copy Trade
-        </Button>
-      </ButtonGroup>
-    </Card>
+        </button>
+      </div>
+    </div>
   );
 };

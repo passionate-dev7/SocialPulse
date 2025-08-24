@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import styled from '@emotion/styled';
-import { css } from '@emotion/react';
+import { Download, Search, Filter, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Trade } from '../types';
 
 interface TradeHistoryProps {
@@ -10,242 +9,6 @@ interface TradeHistoryProps {
   onExport?: () => void;
 }
 
-const Container = styled.div`
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
-`;
-
-const Header = styled.div`
-  padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
-`;
-
-const Title = styled.h3`
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-`;
-
-const Controls = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const Filters = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-`;
-
-const FilterGroup = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-`;
-
-const FilterLabel = styled.label`
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  white-space: nowrap;
-`;
-
-const Select = styled.select`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  background: white;
-  color: #374151;
-  min-width: 120px;
-  
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-`;
-
-const SearchInput = styled.input`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  min-width: 150px;
-  
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-`;
-
-const ExportButton = styled.button`
-  padding: 8px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  background: white;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
-  }
-`;
-
-const TableContainer = styled.div`
-  overflow-x: auto;
-  max-height: 600px;
-  overflow-y: auto;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const TableHeader = styled.thead`
-  background: #f9fafb;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-`;
-
-const TableRow = styled.tr`
-  border-bottom: 1px solid #e5e7eb;
-  
-  &:hover {
-    background: #f9fafb;
-  }
-`;
-
-const TableHeaderCell = styled.th`
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 12px;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  border-bottom: 2px solid #e5e7eb;
-`;
-
-const TableCell = styled.td`
-  padding: 12px 16px;
-  font-size: 14px;
-  color: #374151;
-  white-space: nowrap;
-`;
-
-const StatusBadge = styled.span<{ status: 'open' | 'closed' | 'liquidated' }>`
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: capitalize;
-  
-  ${props => {
-    if (props.status === 'open') {
-      return css`
-        background: #dbeafe;
-        color: #1d4ed8;
-      `;
-    } else if (props.status === 'liquidated') {
-      return css`
-        background: #fee2e2;
-        color: #dc2626;
-      `;
-    } else {
-      return css`
-        background: #d1fae5;
-        color: #065f46;
-      `;
-    }
-  }}
-`;
-
-const SideBadge = styled.span<{ side: 'long' | 'short' }>`
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  
-  ${props => props.side === 'long' ? css`
-    background: #d1fae5;
-    color: #065f46;
-  ` : css`
-    background: #fecaca;
-    color: #991b1b;
-  `}
-`;
-
-const PnLValue = styled.span<{ value: number }>`
-  font-weight: 500;
-  color: ${props => props.value > 0 ? '#059669' : props.value < 0 ? '#dc2626' : '#6b7280'};
-`;
-
-const AssetIcon = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-`;
-
-const LoadingState = styled.div`
-  padding: 40px;
-  text-align: center;
-  color: #6b7280;
-`;
-
-const EmptyState = styled.div`
-  padding: 40px;
-  text-align: center;
-  color: #6b7280;
-`;
-
-const Summary = styled.div`
-  padding: 16px 20px;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 16px;
-`;
-
-const SummaryItem = styled.div`
-  text-align: center;
-`;
-
-const SummaryLabel = styled.div`
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 4px;
-`;
-
-const SummaryValue = styled.div<{ positive?: boolean }>`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${props => 
-    props.positive === false ? '#dc2626' : 
-    props.positive ? '#059669' : 
-    '#111827'
-  };
-`;
 
 const POPULAR_ASSETS = ['BTC', 'ETH', 'SOL', 'AVAX', 'MATIC', 'LINK', 'UNI', 'AAVE', 'DOT', 'ADA'];
 
@@ -393,157 +156,208 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
     return Array.from(new Set(allTrades.map(t => t.asset))).sort();
   }, [allTrades]);
 
+  const getStatusIcon = (status: 'open' | 'closed' | 'liquidated') => {
+    switch (status) {
+      case 'open':
+        return <Clock className="w-3 h-3" />;
+      case 'closed':
+        return <CheckCircle className="w-3 h-3" />;
+      case 'liquidated':
+        return <XCircle className="w-3 h-3" />;
+      default:
+        return null;
+    }
+  };
+
+  const getSideIcon = (side: 'long' | 'short') => {
+    return side === 'long' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />;
+  };
+
   return (
-    <Container>
-      <Header>
-        <Title>Trade History</Title>
-        <Controls>
-          <Filters>
-            <FilterGroup>
-              <FilterLabel>Asset:</FilterLabel>
-              <Select
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      {/* Header */}
+      <div className="p-5 border-b border-gray-200 bg-gray-50">
+        <h3 className="m-0 mb-4 text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <Filter className="w-5 h-5 text-blue-600" />
+          Trade History
+        </h3>
+        <div className="flex flex-wrap justify-between items-center gap-3">
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="flex gap-2 items-center">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Asset:</label>
+              <select
                 value={filters.asset}
                 onChange={(e) => handleFilterChange('asset', e.target.value)}
                 aria-label="Filter by asset"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-700 min-w-[120px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="all">All Assets</option>
                 {uniqueAssets.map(asset => (
                   <option key={asset} value={asset}>{asset}</option>
                 ))}
-              </Select>
-            </FilterGroup>
+              </select>
+            </div>
             
-            <FilterGroup>
-              <FilterLabel>Side:</FilterLabel>
-              <Select
+            <div className="flex gap-2 items-center">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Side:</label>
+              <select
                 value={filters.side}
                 onChange={(e) => handleFilterChange('side', e.target.value)}
                 aria-label="Filter by side"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-700 min-w-[120px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="all">All Sides</option>
                 <option value="long">Long</option>
                 <option value="short">Short</option>
-              </Select>
-            </FilterGroup>
+              </select>
+            </div>
             
-            <FilterGroup>
-              <FilterLabel>Status:</FilterLabel>
-              <Select
+            <div className="flex gap-2 items-center">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Status:</label>
+              <select
                 value={filters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
                 aria-label="Filter by status"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-700 min-w-[120px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="all">All Status</option>
                 <option value="open">Open</option>
                 <option value="closed">Closed</option>
-              </Select>
-            </FilterGroup>
+              </select>
+            </div>
             
-            <FilterGroup>
-              <FilterLabel>PnL:</FilterLabel>
-              <Select
+            <div className="flex gap-2 items-center">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">PnL:</label>
+              <select
                 value={filters.pnl}
                 onChange={(e) => handleFilterChange('pnl', e.target.value)}
                 aria-label="Filter by PnL"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white text-gray-700 min-w-[120px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="all">All</option>
                 <option value="profit">Profit</option>
                 <option value="loss">Loss</option>
-              </Select>
-            </FilterGroup>
+              </select>
+            </div>
             
-            <SearchInput
-              type="text"
-              placeholder="Search assets..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              aria-label="Search trades"
-            />
-          </Filters>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search assets..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                aria-label="Search trades"
+                className="pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm min-w-[150px] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </div>
           
-          <ExportButton onClick={handleExport} aria-label="Export trades to CSV">
+          <button 
+            onClick={handleExport} 
+            aria-label="Export trades to CSV"
+            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white text-gray-700 cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:border-gray-400 flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
             Export CSV
-          </ExportButton>
-        </Controls>
-      </Header>
+          </button>
+        </div>
+      </div>
 
-      <TableContainer>
+      {/* Table Container */}
+      <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
         {filteredTrades.length === 0 ? (
-          <EmptyState>
+          <div className="p-10 text-center text-gray-500">
             No trades found matching your criteria.
-          </EmptyState>
+          </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHeaderCell>Date</TableHeaderCell>
-                <TableHeaderCell>Asset</TableHeaderCell>
-                <TableHeaderCell>Side</TableHeaderCell>
-                <TableHeaderCell>Size</TableHeaderCell>
-                <TableHeaderCell>Entry Price</TableHeaderCell>
-                <TableHeaderCell>Exit Price</TableHeaderCell>
-                <TableHeaderCell>PnL</TableHeaderCell>
-                <TableHeaderCell>Status</TableHeaderCell>
-              </TableRow>
-            </TableHeader>
+          <table className="w-full border-collapse">
+            <thead className="bg-gray-50 sticky top-0 z-10">
+              <tr className="border-b border-gray-200">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-b-2 border-gray-200">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-b-2 border-gray-200">Asset</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-b-2 border-gray-200">Side</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-b-2 border-gray-200">Size</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-b-2 border-gray-200">Entry Price</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-b-2 border-gray-200">Exit Price</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-b-2 border-gray-200">PnL</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-b-2 border-gray-200">Status</th>
+              </tr>
+            </thead>
             <tbody>
               {filteredTrades.map(trade => (
-                <TableRow key={trade.id}>
-                  <TableCell>{formatDate(trade.timestamp)}</TableCell>
-                  <TableCell>
-                    <AssetIcon>
+                <tr key={trade.id} className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{formatDate(trade.timestamp)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                    <div className="flex items-center gap-2 font-medium">
                       {trade.asset}
-                    </AssetIcon>
-                  </TableCell>
-                  <TableCell>
-                    <SideBadge side={trade.side}>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium uppercase ${
+                      trade.side === 'long' 
+                        ? 'bg-emerald-100 text-emerald-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {getSideIcon(trade.side)}
                       {trade.side}
-                    </SideBadge>
-                  </TableCell>
-                  <TableCell>{trade.size.toFixed(2)}</TableCell>
-                  <TableCell>{formatCurrency(trade.entryPrice)}</TableCell>
-                  <TableCell>
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{trade.size.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{formatCurrency(trade.entryPrice)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                     {trade.exitPrice ? formatCurrency(trade.exitPrice) : '-'}
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">
                     {trade.pnl !== undefined ? (
-                      <PnLValue value={trade.pnl}>
+                      <span className={`font-medium ${
+                        trade.pnl > 0 ? 'text-emerald-600' : trade.pnl < 0 ? 'text-red-600' : 'text-gray-500'
+                      }`}>
                         {trade.pnl > 0 ? '+' : ''}{formatCurrency(trade.pnl)}
-                      </PnLValue>
+                      </span>
                     ) : '-'}
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={trade.status}>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium capitalize ${
+                      trade.status === 'open' ? 'bg-blue-100 text-blue-800' :
+                      trade.status === 'liquidated' ? 'bg-red-100 text-red-800' :
+                      'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      {getStatusIcon(trade.status)}
                       {trade.status}
-                    </StatusBadge>
-                  </TableCell>
-                </TableRow>
+                    </span>
+                  </td>
+                </tr>
               ))}
             </tbody>
-          </Table>
+          </table>
         )}
-      </TableContainer>
+      </div>
 
-      <Summary>
-        <SummaryItem>
-          <SummaryLabel>Total Trades</SummaryLabel>
-          <SummaryValue>{summary.totalTrades}</SummaryValue>
-        </SummaryItem>
-        <SummaryItem>
-          <SummaryLabel>Total PnL</SummaryLabel>
-          <SummaryValue positive={summary.totalPnL > 0}>
+      {/* Summary */}
+      <div className="px-5 py-4 border-t border-gray-200 bg-gray-50 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="text-center">
+          <div className="text-xs text-gray-500 mb-1">Total Trades</div>
+          <div className="text-base font-semibold text-gray-900">{summary.totalTrades}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-xs text-gray-500 mb-1">Total PnL</div>
+          <div className={`text-base font-semibold ${
+            summary.totalPnL > 0 ? 'text-emerald-600' : summary.totalPnL < 0 ? 'text-red-600' : 'text-gray-900'
+          }`}>
             {summary.totalPnL > 0 ? '+' : ''}{formatCurrency(summary.totalPnL, true)}
-          </SummaryValue>
-        </SummaryItem>
-        <SummaryItem>
-          <SummaryLabel>Win Rate</SummaryLabel>
-          <SummaryValue>{summary.winRate.toFixed(1)}%</SummaryValue>
-        </SummaryItem>
-        <SummaryItem>
-          <SummaryLabel>Total Volume</SummaryLabel>
-          <SummaryValue>{formatCurrency(summary.totalVolume, true)}</SummaryValue>
-        </SummaryItem>
-      </Summary>
-    </Container>
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-xs text-gray-500 mb-1">Win Rate</div>
+          <div className="text-base font-semibold text-gray-900">{summary.winRate.toFixed(1)}%</div>
+        </div>
+        <div className="text-center">
+          <div className="text-xs text-gray-500 mb-1">Total Volume</div>
+          <div className="text-base font-semibold text-gray-900">{formatCurrency(summary.totalVolume, true)}</div>
+        </div>
+      </div>
+    </div>
   );
 };

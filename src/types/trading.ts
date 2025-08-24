@@ -135,6 +135,8 @@ export interface Position {
   liquidationPrice: number;
   margin: number;
   marginRatio: number;
+  stopLoss?: number;
+  takeProfit?: number;
   openedAt: string;
 }
 

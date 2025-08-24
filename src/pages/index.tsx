@@ -13,8 +13,14 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ platformStats, topTraders }) => {
-  const { traders, loading } = useTraders();
-  const displayTraders = loading ? topTraders : traders.slice(0, 6);
+  const { data: traders, isLoading } = useTraders({
+    timeframe: '30d',
+    strategy: 'all',
+    search: '',
+    sortBy: 'pnl',
+    sortOrder: 'desc'
+  });
+  const displayTraders = isLoading ? topTraders : traders?.slice(0, 6) || [];
 
   return (
     <ErrorBoundary>
@@ -294,21 +300,37 @@ export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
     id: `top-trader-${i + 1}`,
     address: `0x${Math.random().toString(16).substr(2, 40)}`,
     username: `TopTrader${i + 1}`,
+    name: `TopTrader${i + 1}`,
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=top${i}`,
     verified: true,
+    isVerified: true,
     rank: i + 1,
     totalPnL: (1000000 - i * 150000) + (Math.random() - 0.5) * 100000,
+    pnl: (1000000 - i * 150000) + (Math.random() - 0.5) * 100000,
+    roi: (85 - i * 2 + Math.random() * 5),
+    totalReturn: (85 - i * 2 + Math.random() * 5),
+    monthlyReturn: (15 - i * 1 + Math.random() * 5),
     winRate: 85 - i * 2 + Math.random() * 5,
     totalTrades: 5000 - i * 200,
     followersCount: 10000 - i * 1000,
+    followers: 10000 - i * 1000,
     copiedVolume: 5000000 - i * 500000,
     riskScore: Math.floor(Math.random() * 5) + 1,
     sharpeRatio: 3.5 - i * 0.2,
+    aum: 5000000 - i * 500000,
     maxDrawdown: 5 + i * 2,
     avgHoldTime: 8 + Math.random() * 10,
     preferredPairs: ['BTC/USD', 'ETH/USD'],
+    strategy: ['DeFi Yield', 'Swing Trading', 'Arbitrage', 'Momentum', 'Mean Reversion'][i % 5],
+    isFollowing: false,
     createdAt: new Date(Date.now() - (365 - i * 30) * 24 * 60 * 60 * 1000),
     lastActive: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
+    performance: Array.from({ length: 30 }, (_, j) => ({
+      date: new Date(Date.now() - (29 - j) * 24 * 60 * 60 * 1000).toISOString(),
+      pnl: Math.random() * 20000 - 10000,
+      value: Math.random() * 150000 + 50000,
+      cumulativeReturn: Math.random() * 50 - 25
+    }))
   }));
 
   return {

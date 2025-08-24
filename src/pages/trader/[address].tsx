@@ -388,7 +388,7 @@ const TraderProfilePage: React.FC<TraderProfilePageProps> = ({ trader: initialTr
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatTimeAgo(trade.openedAt)}
+                              {formatTimeAgo(trade.openedAt || new Date())}
                             </td>
                           </tr>
                         ))}
@@ -490,38 +490,59 @@ export const getServerSideProps: GetServerSideProps<TraderProfilePageProps> = as
       id: `trader-${address}`,
       address: address as string,
       username: `Trader_${(address as string).slice(0, 6)}`,
+      name: `Trader_${(address as string).slice(0, 6)}`,
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${address}`,
       verified: Math.random() > 0.5,
+      isVerified: Math.random() > 0.5,
       rank: Math.floor(Math.random() * 100) + 1,
       totalPnL: (Math.random() - 0.2) * 500000,
+      pnl: (Math.random() - 0.2) * 500000,
+      roi: Math.random() * 30 + 60,
+      totalReturn: Math.random() * 30 + 60,
+      monthlyReturn: (Math.random() * 30 + 60) / 12,
       winRate: Math.random() * 30 + 60,
       totalTrades: Math.floor(Math.random() * 2000) + 500,
       followersCount: Math.floor(Math.random() * 10000) + 100,
+      followers: Math.floor(Math.random() * 10000) + 100,
       copiedVolume: Math.random() * 1000000,
+      aum: Math.random() * 1000000,
       riskScore: Math.floor(Math.random() * 10) + 1,
       sharpeRatio: Math.random() * 4,
       maxDrawdown: Math.random() * 25 + 5,
       avgHoldTime: Math.random() * 48 + 2,
       preferredPairs: ['BTC/USD', 'ETH/USD', 'SOL/USD'],
+      strategy: 'Swing Trading',
+      performance: Array.from({ length: 30 }, (_, j) => ({
+        date: new Date(Date.now() - (29 - j) * 24 * 60 * 60 * 1000).toISOString(),
+        pnl: Math.random() * 5000 - 2500,
+        value: Math.random() * 100000 + 50000,
+        cumulativeReturn: Math.random() * 50 - 25
+      })),
+      isFollowing: false,
       createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
       lastActive: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
     };
 
-    const recentTrades: Trade[] = Array.from({ length: 20 }, (_, i) => ({
-      id: `trade-${i}`,
-      traderId: trader.id,
-      pair: ['BTC/USD', 'ETH/USD', 'SOL/USD', 'AVAX/USD'][Math.floor(Math.random() * 4)],
-      side: Math.random() > 0.5 ? 'long' : 'short',
-      entryPrice: Math.random() * 100000 + 1000,
-      exitPrice: Math.random() > 0.3 ? Math.random() * 100000 + 1000 : undefined,
-      size: Math.random() * 10000 + 100,
-      pnl: Math.random() > 0.3 ? (Math.random() - 0.4) * 5000 : undefined,
-      pnlPercent: Math.random() > 0.3 ? (Math.random() - 0.4) * 20 : undefined,
-      leverage: Math.floor(Math.random() * 10) + 1,
-      openedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-      closedAt: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 6 * 24 * 60 * 60 * 1000) : undefined,
-      status: Math.random() > 0.3 ? 'closed' : Math.random() > 0.1 ? 'open' : 'liquidated',
-    }));
+    const recentTrades: Trade[] = Array.from({ length: 20 }, (_, i) => {
+      const pair = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'AVAX/USD'][Math.floor(Math.random() * 4)];
+      return {
+        id: `trade-${i}`,
+        traderId: trader.id,
+        pair,
+        asset: pair,
+        side: Math.random() > 0.5 ? 'long' : 'short',
+        entryPrice: Math.random() * 100000 + 1000,
+        exitPrice: Math.random() > 0.3 ? Math.random() * 100000 + 1000 : undefined,
+        size: Math.random() * 10000 + 100,
+        pnl: Math.random() > 0.3 ? (Math.random() - 0.4) * 5000 : undefined,
+        pnlPercent: Math.random() > 0.3 ? (Math.random() - 0.4) * 20 : undefined,
+        leverage: Math.floor(Math.random() * 10) + 1,
+        openedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+        closedAt: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 6 * 24 * 60 * 60 * 1000) : undefined,
+        timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+        status: Math.random() > 0.3 ? 'closed' : Math.random() > 0.1 ? 'open' : 'liquidated',
+      };
+    });
 
     return {
       props: {

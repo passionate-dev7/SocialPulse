@@ -1,6 +1,6 @@
 # SocialPulse - Social Trading Platform for Hyperliquid
 
-A Next.js-based social trading platform that allows users to discover, follow, and copy successful crypto traders on the Hyperliquid exchange.
+A Next.js-based Social trading platform that allows users to discover, follow, and copy successful crypto traders on the Hyperliquid exchange.
 
 ## 🚀 Features
 

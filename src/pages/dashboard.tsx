@@ -23,40 +23,43 @@ const DashboardPage: React.FC = () => {
         // Mock portfolio data
         const mockPositions: Position[] = [
           {
-            id: 'pos-1',
-            pair: 'BTC/USD',
+            coin: 'BTC',
             side: 'long',
             size: 15000,
             entryPrice: 67500,
-            currentPrice: 69200,
-            pnl: 378.5,
-            pnlPercent: 2.51,
+            markPrice: 69200,
+            unrealizedPnl: 378.5,
             leverage: 3,
             liquidationPrice: 45000,
+            margin: 5000,
+            marginRatio: 0.072,
+            openedAt: new Date().toISOString(),
           },
           {
-            id: 'pos-2',
-            pair: 'ETH/USD',
+            coin: 'ETH',
             side: 'short',
             size: 8000,
             entryPrice: 3750,
-            currentPrice: 3680,
-            pnl: 149.33,
-            pnlPercent: 1.87,
+            markPrice: 3680,
+            unrealizedPnl: 149.33,
             leverage: 2,
             liquidationPrice: 7500,
+            margin: 4000,
+            marginRatio: 0.533,
+            openedAt: new Date(Date.now() - 3600000).toISOString(),
           },
           {
-            id: 'pos-3',
-            pair: 'SOL/USD',
+            coin: 'SOL',
             side: 'long',
             size: 5000,
             entryPrice: 185,
-            currentPrice: 178,
-            pnl: -189.19,
-            pnlPercent: -3.78,
+            markPrice: 178,
+            unrealizedPnl: -189.19,
             leverage: 5,
             liquidationPrice: 148,
+            margin: 1000,
+            marginRatio: 0.158,
+            openedAt: new Date(Date.now() - 7200000).toISOString(),
           },
         ];
 
@@ -65,20 +68,31 @@ const DashboardPage: React.FC = () => {
             trader: {
               id: 'trader-1',
               address: '0x742d35Cc6634C0532925a3b8D82C9432E2',
+              name: 'CryptoMaster',
               username: 'CryptoMaster',
               avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=1',
+              isVerified: true,
               verified: true,
               rank: 3,
+              pnl: 145000,
               totalPnL: 145000,
+              roi: 45.2,
+              totalReturn: 45.2,
+              monthlyReturn: 3.8,
               winRate: 73.5,
               totalTrades: 1245,
+              followers: 8900,
               followersCount: 8900,
               copiedVolume: 2400000,
+              aum: 2400000,
               riskScore: 4,
               sharpeRatio: 2.8,
               maxDrawdown: 12.5,
               avgHoldTime: 18.5,
               preferredPairs: ['BTC/USD', 'ETH/USD'],
+              strategy: 'Momentum',
+              performance: [],
+              isFollowing: true,
               createdAt: new Date('2023-01-15'),
               lastActive: new Date(),
             },
@@ -93,20 +107,31 @@ const DashboardPage: React.FC = () => {
             trader: {
               id: 'trader-2',
               address: '0x892e47Dc8634C0532925a3b8D82C943BB4',
+              name: 'DegenKing',
               username: 'DegenKing',
               avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=2',
+              isVerified: false,
               verified: false,
               rank: 12,
+              pnl: 89000,
               totalPnL: 89000,
+              roi: 28.5,
+              totalReturn: 28.5,
+              monthlyReturn: 2.4,
               winRate: 68.2,
               totalTrades: 890,
+              followers: 3400,
               followersCount: 3400,
               copiedVolume: 890000,
+              aum: 890000,
               riskScore: 7,
               sharpeRatio: 2.1,
               maxDrawdown: 18.9,
               avgHoldTime: 8.2,
               preferredPairs: ['SOL/USD', 'AVAX/USD'],
+              strategy: 'DeFi',
+              performance: [],
+              isFollowing: false,
               createdAt: new Date('2023-03-22'),
               lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000),
             },
@@ -127,21 +152,26 @@ const DashboardPage: React.FC = () => {
           followedTraders: mockFollowedTraders,
         };
 
-        const mockActivity: Trade[] = Array.from({ length: 10 }, (_, i) => ({
-          id: `activity-${i}`,
-          traderId: mockFollowedTraders[Math.floor(Math.random() * 2)].trader.id,
-          pair: ['BTC/USD', 'ETH/USD', 'SOL/USD'][Math.floor(Math.random() * 3)],
-          side: Math.random() > 0.5 ? 'long' : 'short',
-          entryPrice: Math.random() * 100000 + 1000,
-          exitPrice: Math.random() > 0.5 ? Math.random() * 100000 + 1000 : undefined,
-          size: Math.random() * 5000 + 100,
-          pnl: Math.random() > 0.5 ? (Math.random() - 0.4) * 1000 : undefined,
-          pnlPercent: Math.random() > 0.5 ? (Math.random() - 0.4) * 15 : undefined,
-          leverage: Math.floor(Math.random() * 5) + 1,
-          openedAt: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
-          closedAt: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 12 * 60 * 60 * 1000) : undefined,
-          status: Math.random() > 0.5 ? 'closed' : 'open',
-        }));
+        const mockActivity: Trade[] = Array.from({ length: 10 }, (_, i) => {
+          const pair = ['BTC/USD', 'ETH/USD', 'SOL/USD'][Math.floor(Math.random() * 3)];
+          return {
+            id: `activity-${i}`,
+            traderId: mockFollowedTraders[Math.floor(Math.random() * 2)].trader.id,
+            pair,
+            asset: pair,
+            side: Math.random() > 0.5 ? 'long' : 'short',
+            entryPrice: Math.random() * 100000 + 1000,
+            exitPrice: Math.random() > 0.5 ? Math.random() * 100000 + 1000 : undefined,
+            size: Math.random() * 5000 + 100,
+            pnl: Math.random() > 0.5 ? (Math.random() - 0.4) * 1000 : undefined,
+            pnlPercent: Math.random() > 0.5 ? (Math.random() - 0.4) * 15 : undefined,
+            leverage: Math.floor(Math.random() * 5) + 1,
+            openedAt: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
+            closedAt: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 12 * 60 * 60 * 1000) : undefined,
+            timestamp: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+            status: Math.random() > 0.5 ? 'closed' : 'open',
+          };
+        });
 
         setPortfolio(mockPortfolio);
         setRecentActivity(mockActivity);
@@ -373,9 +403,9 @@ const DashboardPage: React.FC = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {portfolio.positions.map((position) => (
-                          <tr key={position.id}>
+                          <tr key={position.coin}>
                             <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                              {position.pair}
+                              {position.coin}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -393,12 +423,12 @@ const DashboardPage: React.FC = () => {
                               ${position.entryPrice.toLocaleString()}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              ${position.currentPrice.toLocaleString()}
+                              ${position.markPrice.toLocaleString()}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                              <div className={getPnLColor(position.pnl)}>
-                                <div className="font-medium">{formatCurrency(position.pnl)}</div>
-                                <div className="text-xs">({formatPercentage(position.pnlPercent)})</div>
+                              <div className={getPnLColor(position.unrealizedPnl)}>
+                                <div className="font-medium">{formatCurrency(position.unrealizedPnl)}</div>
+                                <div className="text-xs">({formatPercentage((position.unrealizedPnl / (position.size * position.entryPrice)) * 100)})</div>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -530,7 +560,7 @@ const DashboardPage: React.FC = () => {
                               </div>
                             )}
                             <div className="text-sm text-gray-500">
-                              {formatTimeAgo(trade.openedAt)}
+                              {trade.openedAt ? formatTimeAgo(trade.openedAt) : 'Unknown'}
                             </div>
                           </div>
                         </div>

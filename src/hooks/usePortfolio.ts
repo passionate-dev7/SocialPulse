@@ -11,7 +11,7 @@ import {
 import { apiClient, queryKeys } from '../utils/api';
 import { useWebSocket } from './useWebSocket';
 import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
+// import { toast } from 'react-hot-toast'; // Commented out as package not installed
 
 // Get current positions with real-time updates
 export const usePositions = () => {
@@ -62,10 +62,7 @@ export const usePositions = () => {
           const message = type === 'position_liquidated' 
             ? `⚠️ ${position.coin} position liquidated`
             : `✅ ${position.coin} position closed`;
-          toast(message, { 
-            duration: 5000,
-            icon: type === 'position_liquidated' ? '⚠️' : '✅'
-          });
+          console.log(message);
           break;
       }
       
@@ -272,10 +269,10 @@ export const useClosePosition = () => {
         queryKeys.portfolio.positions(),
         context?.previousPositions
       );
-      toast.error('Failed to close position');
+      console.error('Failed to close position');
     },
     onSuccess: (data, variables) => {
-      toast.success(`Position ${variables.coin} closed successfully`);
+      console.log(`Position ${variables.coin} closed successfully`);
       
       // Invalidate related queries
       queryClient.invalidateQueries({
@@ -347,10 +344,10 @@ export const useUpdatePositionSettings = () => {
         queryKeys.portfolio.positions(),
         context?.previousPositions
       );
-      toast.error('Failed to update position settings');
+      console.error('Failed to update position settings');
     },
     onSuccess: () => {
-      toast.success('Position settings updated');
+      console.log('Position settings updated');
       queryClient.invalidateQueries({
         queryKey: queryKeys.portfolio.positions(),
       });

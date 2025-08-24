@@ -345,7 +345,7 @@ export const useMultiWebSocket = (configs: Record<string, WebSocketConfig>) => {
       if (!connections.current[key]) {
         // We can't actually call hooks dynamically, so this is a simplified version
         // In practice, you'd need to restructure this differently
-        log(`Would initialize connection: ${key}`);
+        console.log(`Would initialize connection: ${key}`);
       }
     });
   }, [configs]);

@@ -1,6 +1,5 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import styled from '@emotion/styled';
-import { css } from '@emotion/react';
+import React, { useState, useMemo, useRef } from 'react';
+import { BarChart3, Download, Eye, EyeOff } from 'lucide-react';
 import { Trader, PerformanceData } from '../types';
 
 interface PerformanceChartProps {
@@ -10,193 +9,6 @@ interface PerformanceChartProps {
   showComparison?: boolean;
   onTimeframeChange?: (timeframe: string) => void;
 }
-
-const Container = styled.div`
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
-`;
-
-const Header = styled.div`
-  padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
-`;
-
-const Title = styled.h3`
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-`;
-
-const Controls = styled.div`
-  display: flex;
-  justify-content: between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-`;
-
-const TimeframeButtons = styled.div`
-  display: flex;
-  background: #f3f4f6;
-  border-radius: 8px;
-  padding: 4px;
-  gap: 4px;
-`;
-
-const TimeframeButton = styled.button<{ active: boolean }>`
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: ${props => props.active ? 'white' : 'transparent'};
-  color: ${props => props.active ? '#3b82f6' : '#6b7280'};
-  box-shadow: ${props => props.active ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none'};
-  
-  &:hover {
-    color: #3b82f6;
-  }
-`;
-
-const TraderLegend = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: center;
-`;
-
-const LegendItem = styled.div<{ active: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  opacity: ${props => props.active ? 1 : 0.5};
-  transition: opacity 0.2s;
-  
-  &:hover {
-    opacity: 1;
-  }
-`;
-
-const ColorDot = styled.div<{ color: string }>`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: ${props => props.color};
-`;
-
-const LegendLabel = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-`;
-
-const ChartContainer = styled.div<{ height: number }>`
-  padding: 20px;
-  height: ${props => props.height}px;
-  position: relative;
-`;
-
-const SVGChart = styled.svg`
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-`;
-
-const GridLine = styled.line`
-  stroke: #f3f4f6;
-  stroke-width: 1;
-`;
-
-const ChartLine = styled.path<{ color: string; active: boolean }>`
-  fill: none;
-  stroke: ${props => props.color};
-  stroke-width: ${props => props.active ? '3' : '2'};
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: ${props => props.active ? 1 : 0.3};
-  transition: all 0.2s;
-  
-  &:hover {
-    stroke-width: 3;
-    opacity: 1;
-  }
-`;
-
-const ChartArea = styled.path<{ color: string; active: boolean }>`
-  fill: ${props => props.color};
-  fill-opacity: ${props => props.active ? 0.1 : 0.05};
-  transition: all 0.2s;
-`;
-
-const Tooltip = styled.div<{ x: number; y: number; visible: boolean }>`
-  position: absolute;
-  left: ${props => props.x}px;
-  top: ${props => props.y}px;
-  background: #111827;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  pointer-events: none;
-  transform: translate(-50%, -100%);
-  opacity: ${props => props.visible ? 1 : 0};
-  transition: opacity 0.2s;
-  z-index: 10;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    border: 4px solid transparent;
-    border-top-color: #111827;
-    transform: translateX(-50%);
-  }
-`;
-
-const AxisLabel = styled.text`
-  font-size: 10px;
-  fill: #6b7280;
-  text-anchor: middle;
-  dominant-baseline: central;
-`;
-
-const StatsGrid = styled.div`
-  padding: 20px;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 16px;
-`;
-
-const StatItem = styled.div`
-  text-align: center;
-`;
-
-const StatLabel = styled.div`
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 4px;
-`;
-
-const StatValue = styled.div<{ positive?: boolean }>`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${props => 
-    props.positive === false ? '#dc2626' : 
-    props.positive ? '#059669' : 
-    '#111827'
-  };
-`;
 
 const CHART_COLORS = [
   '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
@@ -395,69 +207,96 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
   const padding = 40;
 
   return (
-    <Container ref={containerRef}>
-      <Header>
-        <Title>Performance Chart</Title>
-        <Controls>
-          <TimeframeButtons>
+    <div ref={containerRef} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      {/* Header */}
+      <div className="p-5 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="w-5 h-5 text-blue-600" />
+          <h3 className="m-0 text-lg font-semibold text-gray-900">Performance Chart</h3>
+        </div>
+        <div className="flex flex-wrap justify-between items-center gap-3">
+          {/* Timeframe Buttons */}
+          <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
             {TIMEFRAMES.map(tf => (
-              <TimeframeButton
+              <button
                 key={tf.key}
-                active={selectedTimeframe === tf.key}
                 onClick={() => handleTimeframeChange(tf.key)}
                 aria-label={`Show ${tf.label} timeframe`}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium cursor-pointer transition-all duration-200 ${
+                  selectedTimeframe === tf.key
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-500 hover:text-blue-600'
+                }`}
               >
                 {tf.label}
-              </TimeframeButton>
+              </button>
             ))}
-          </TimeframeButtons>
+          </div>
           
+          {/* Trader Legend */}
           {showComparison && (
-            <TraderLegend>
-              {chartData.map((trader, index) => (
-                <LegendItem
-                  key={trader.id}
-                  active={activeTraders.includes(trader.id)}
-                  onClick={() => toggleTrader(trader.id)}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`Toggle ${trader.name} on chart`}
-                >
-                  <ColorDot color={CHART_COLORS[index % CHART_COLORS.length]} />
-                  <LegendLabel>{trader.name}</LegendLabel>
-                </LegendItem>
-              ))}
-            </TraderLegend>
+            <div className="flex flex-wrap gap-4 items-center">
+              {chartData.map((trader, index) => {
+                const isActive = activeTraders.includes(trader.id);
+                return (
+                  <div
+                    key={trader.id}
+                    onClick={() => toggleTrader(trader.id)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Toggle ${trader.name} on chart`}
+                    className={`flex items-center gap-2 cursor-pointer transition-opacity duration-200 ${
+                      isActive ? 'opacity-100' : 'opacity-50 hover:opacity-100'
+                    }`}
+                  >
+                    {isActive ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                    />
+                    <span className="text-sm font-medium text-gray-700">{trader.name}</span>
+                  </div>
+                );
+              })}
+            </div>
           )}
-        </Controls>
-      </Header>
+        </div>
+      </div>
 
-      <ChartContainer height={height}>
-        <SVGChart
+      {/* Chart Container */}
+      <div className="p-5 relative" style={{ height: `${height}px` }}>
+        <svg
+          width="100%"
+          height="100%"
           viewBox={`0 0 ${chartWidth} ${chartHeight}`}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           role="img"
           aria-label="Performance chart showing trader returns over time"
+          className="overflow-visible"
         >
           {/* Grid lines */}
           {Array.from({ length: 6 }, (_, i) => (
-            <GridLine
+            <line
               key={`grid-y-${i}`}
               x1={padding}
               y1={padding + (i * (chartHeight - 2 * padding)) / 5}
               x2={chartWidth - padding}
               y2={padding + (i * (chartHeight - 2 * padding)) / 5}
+              stroke="#f3f4f6"
+              strokeWidth={1}
             />
           ))}
           
           {Array.from({ length: 6 }, (_, i) => (
-            <GridLine
+            <line
               key={`grid-x-${i}`}
               x1={padding + (i * (chartWidth - 2 * padding)) / 5}
               y1={padding}
               x2={padding + (i * (chartWidth - 2 * padding)) / 5}
               y2={chartHeight - padding}
+              stroke="#f3f4f6"
+              strokeWidth={1}
             />
           ))}
 
@@ -465,13 +304,17 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
           {Array.from({ length: 6 }, (_, i) => {
             const value = chartBounds.maxY - (i * (chartBounds.maxY - chartBounds.minY)) / 5;
             return (
-              <AxisLabel
+              <text
                 key={`y-label-${i}`}
                 x={padding - 10}
                 y={padding + (i * (chartHeight - 2 * padding)) / 5}
+                fontSize={10}
+                fill="#6b7280"
+                textAnchor="middle"
+                dominantBaseline="central"
               >
                 {formatCurrency(value)}
-              </AxisLabel>
+              </text>
             );
           })}
 
@@ -493,33 +336,43 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
 
             return (
               <g key={trader.id}>
-                <ChartArea
+                <path
                   d={areaPath}
-                  color={color}
-                  active={isActive}
+                  fill={color}
+                  fillOpacity={isActive ? 0.1 : 0.05}
+                  className="transition-all duration-200"
                 />
-                <ChartLine
+                <path
                   d={linePath}
-                  color={color}
-                  active={isActive}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={isActive ? 3 : 2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  opacity={isActive ? 1 : 0.3}
+                  className="transition-all duration-200 hover:stroke-[3] hover:opacity-100"
                 />
               </g>
             );
           })}
-        </SVGChart>
+        </svg>
 
-        <Tooltip
-          x={tooltip.x}
-          y={tooltip.y}
-          visible={tooltip.visible}
-        >
-          {tooltip.content.split('\n').map((line, index) => (
-            <div key={index}>{line}</div>
-          ))}
-        </Tooltip>
-      </ChartContainer>
+        {/* Tooltip */}
+        {tooltip.visible && (
+          <div 
+            className="absolute bg-gray-900 text-white px-3 py-2 rounded-md text-xs pointer-events-none transform -translate-x-1/2 -translate-y-full z-10 opacity-100 transition-opacity duration-200"
+            style={{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }}
+          >
+            {tooltip.content.split('\n').map((line, index) => (
+              <div key={index}>{line}</div>
+            ))}
+            <div className="absolute top-full left-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 transform -translate-x-1/2" />
+          </div>
+        )}
+      </div>
 
-      <StatsGrid>
+      {/* Stats Grid */}
+      <div className="p-5 border-t border-gray-200 bg-gray-50 grid grid-cols-2 md:grid-cols-4 gap-4">
         {chartData
           .filter(trader => activeTraders.includes(trader.id))
           .map(trader => {
@@ -529,17 +382,17 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
             const returnPct = startValue !== 0 ? (totalReturn / Math.abs(startValue)) * 100 : 0;
 
             return (
-              <React.Fragment key={trader.id}>
-                <StatItem>
-                  <StatLabel>{trader.name} - Return</StatLabel>
-                  <StatValue positive={totalReturn > 0}>
-                    {formatPercentage(returnPct)}
-                  </StatValue>
-                </StatItem>
-              </React.Fragment>
+              <div key={trader.id} className="text-center">
+                <div className="text-xs text-gray-500 mb-1">{trader.name} - Return</div>
+                <div className={`text-base font-semibold ${
+                  totalReturn > 0 ? 'text-emerald-600' : totalReturn < 0 ? 'text-red-600' : 'text-gray-900'
+                }`}>
+                  {formatPercentage(returnPct)}
+                </div>
+              </div>
             );
           })}
-      </StatsGrid>
-    </Container>
+      </div>
+    </div>
   );
 };

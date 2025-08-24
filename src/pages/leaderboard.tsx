@@ -17,7 +17,13 @@ type SortOrder = 'asc' | 'desc';
 type ViewMode = 'grid' | 'list';
 
 const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ initialTraders }) => {
-  const { traders, loading, error, fetchTraders } = useTraders();
+  const { data: traders, isLoading: loading, error } = useTraders({ 
+    timeframe: '30d', 
+    strategy: 'all', 
+    search: '', 
+    sortBy: 'rank', 
+    sortOrder: 'asc' 
+  });
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -32,7 +38,7 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ initialTraders }) => 
   const displayTraders = loading ? initialTraders : traders;
 
   // Filter and sort traders
-  const filteredTraders = displayTraders
+  const filteredTraders = (displayTraders || [])
     .filter(trader => {
       if (searchQuery && !trader.username?.toLowerCase().includes(searchQuery.toLowerCase()) && 
           !trader.address.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -210,9 +216,9 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ initialTraders }) => 
           {error && (
             <div className="text-center py-12">
               <div className="text-red-600 text-lg font-medium mb-2">Error loading traders</div>
-              <p className="text-gray-600">{error}</p>
+              <p className="text-gray-600">{error?.message || 'An error occurred'}</p>
               <button
-                onClick={() => fetchTraders()}
+                onClick={() => window.location.reload()}
                 className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
               >
                 Retry
@@ -227,7 +233,7 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ initialTraders }) => 
               <div className="mb-6">
                 <p className="text-gray-600">
                   Showing {filteredTraders.length} traders
-                  {filteredTraders.length !== displayTraders.length && ` of ${displayTraders.length} total`}
+                  {filteredTraders.length !== (displayTraders || []).length && ` of ${(displayTraders || []).length} total`}
                 </p>
               </div>
 
@@ -439,19 +445,35 @@ export const getServerSideProps: GetServerSideProps<LeaderboardPageProps> = asyn
     id: `initial-trader-${i + 1}`,
     address: `0x${Math.random().toString(16).substr(2, 40)}`,
     username: `Trader${i + 1}`,
+    name: `Trader${i + 1}`,
     avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`,
     verified: Math.random() > 0.7,
+    isVerified: Math.random() > 0.7,
     rank: i + 1,
     totalPnL: (Math.random() - 0.3) * 100000,
+    pnl: (Math.random() - 0.3) * 100000,
+    roi: Math.random() * 40 + 50,
+    totalReturn: Math.random() * 40 + 50,
+    monthlyReturn: (Math.random() * 40 + 50) / 12,
     winRate: Math.random() * 40 + 50,
     totalTrades: Math.floor(Math.random() * 1000) + 100,
     followersCount: Math.floor(Math.random() * 5000),
+    followers: Math.floor(Math.random() * 5000),
     copiedVolume: Math.random() * 500000,
+    aum: Math.random() * 500000,
     riskScore: Math.floor(Math.random() * 10) + 1,
     sharpeRatio: Math.random() * 3,
     maxDrawdown: Math.random() * 30,
     avgHoldTime: Math.random() * 24,
     preferredPairs: ['BTC/USD', 'ETH/USD', 'SOL/USD'].slice(0, Math.floor(Math.random() * 3) + 1),
+    strategy: ['DeFi Yield', 'Swing Trading', 'Arbitrage', 'Momentum', 'Mean Reversion'][i % 5],
+    performance: Array.from({ length: 30 }, (_, j) => ({
+      date: new Date(Date.now() - (29 - j) * 24 * 60 * 60 * 1000).toISOString(),
+      pnl: Math.random() * 5000 - 2500,
+      value: Math.random() * 100000 + 50000,
+      cumulativeReturn: Math.random() * 50 - 25
+    })),
+    isFollowing: false,
     createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
     lastActive: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
   }));
