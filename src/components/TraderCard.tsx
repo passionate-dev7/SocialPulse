@@ -166,14 +166,14 @@ const formatPercentage = (value: number) => {
 };
 
 export const TraderCard: React.FC<TraderCardProps> = ({ trader, onCopyTrade }) => {
-  const followMutation = useFollowTrader();
-  const unfollowMutation = useUnfollowTrader();
+  const { followTrader } = useFollowTrader();
+  const { unfollowTrader } = useUnfollowTrader();
 
   const handleFollowClick = () => {
     if (trader.isFollowing) {
-      unfollowMutation.mutate(trader.id);
+      unfollowTrader(trader.id);
     } else {
-      followMutation.mutate(trader.id);
+      followTrader(trader.id);
     }
   };
 
@@ -251,15 +251,10 @@ export const TraderCard: React.FC<TraderCardProps> = ({ trader, onCopyTrade }) =
         <Button
           variant="secondary"
           onClick={handleFollowClick}
-          disabled={followMutation.isPending || unfollowMutation.isPending}
+          disabled={false}
           aria-label={trader.isFollowing ? 'Unfollow trader' : 'Follow trader'}
         >
-          {followMutation.isPending || unfollowMutation.isPending
-            ? 'Loading...'
-            : trader.isFollowing
-            ? 'Unfollow'
-            : 'Follow'
-          }
+          {trader.isFollowing ? 'Unfollow' : 'Follow'}
         </Button>
         <Button
           variant="primary"

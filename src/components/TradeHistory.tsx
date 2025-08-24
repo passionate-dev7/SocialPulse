@@ -151,20 +151,31 @@ const TableCell = styled.td`
   white-space: nowrap;
 `;
 
-const StatusBadge = styled.span<{ status: 'open' | 'closed' }>`
+const StatusBadge = styled.span<{ status: 'open' | 'closed' | 'liquidated' }>`
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
   text-transform: capitalize;
   
-  ${props => props.status === 'open' ? css`
-    background: #dbeafe;
-    color: #1d4ed8;
-  ` : css`
-    background: #d1fae5;
-    color: #065f46;
-  `}
+  ${props => {
+    if (props.status === 'open') {
+      return css`
+        background: #dbeafe;
+        color: #1d4ed8;
+      `;
+    } else if (props.status === 'liquidated') {
+      return css`
+        background: #fee2e2;
+        color: #dc2626;
+      `;
+    } else {
+      return css`
+        background: #d1fae5;
+        color: #065f46;
+      `;
+    }
+  }}
 `;
 
 const SideBadge = styled.span<{ side: 'long' | 'short' }>`
@@ -256,6 +267,7 @@ const generateMockTrades = (count: number): Trade[] => {
     trades.push({
       id: `trade-${i}`,
       traderId: 'trader-1',
+      pair: asset,
       asset,
       side,
       size,

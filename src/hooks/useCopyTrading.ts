@@ -231,7 +231,7 @@ export const useCopyTrades = () => {
     
     // Show notification
     const message = `${traderAddress} ${action}ed ${trade.side} ${trade.coin} at ${trade.entryPrice}`;
-    toast(`📈 ${message}`, { duration: 5000 });
+    console.log(`📈 ${message}`);
 
     // Update cache with new trade
     queryClient.setQueryData<Trade[]>(

@@ -20,12 +20,11 @@ export const TradingDashboard: React.FC = () => {
   const [selectedMarket, setSelectedMarket] = useState<string>('BTC');
 
   // Trading hooks
-  const { data: topTraders, isLoading: tradersLoading } = useTopTraders(
-    { timeframe: '24h', minVolume: 10000 },
-    20
-  );
+  const { data: topTraders, isLoading: tradersLoading } = useTopTraders({
+    timeframe: '24h'
+  });
   
-  const { data: traderDetails } = useTraderDetails(selectedTrader || undefined);
+  const { data: traderDetails } = useTraderDetails(selectedTrader || '');
   
   const { data: positions, isConnected: positionsConnected } = usePositions();
   const { data: balance } = useBalance();
@@ -135,7 +134,7 @@ export const TradingDashboard: React.FC = () => {
             <div>Loading traders...</div>
           ) : (
             <div className="traders-list">
-              {topTraders?.pages[0]?.items.map((trader) => (
+              {topTraders?.map((trader: any) => (
                 <div 
                   key={trader.address} 
                   className={`trader-item ${selectedTrader === trader.address ? 'selected' : ''}`}
@@ -185,23 +184,25 @@ export const TradingDashboard: React.FC = () => {
             <h2>Trader Details</h2>
             
             <div className="trader-details-card">
-              <h3>{traderDetails.username || `${traderDetails.address.slice(0, 8)}...`}</h3>
+              <h3>{traderDetails.name || `${traderDetails.address.slice(0, 8)}...`}</h3>
               {traderDetails.verified && <span className="verified-badge">✓ Verified</span>}
               
               <div className="trader-stats">
-                <p>Total Volume: ${traderDetails.totalVolume.toLocaleString()}</p>
+                <p>Total Volume: ${traderDetails.copiedVolume.toLocaleString()}</p>
                 <p>Followers: {traderDetails.followers.toLocaleString()}</p>
-                <p>Total Trades: {traderDetails.statistics.totalTrades.toLocaleString()}</p>
-                <p>Sharpe Ratio: {traderDetails.statistics.sharpeRatio.toFixed(2)}</p>
-                <p>Max Drawdown: {(traderDetails.statistics.maxDrawdown * 100).toFixed(1)}%</p>
+                <p>Total Trades: {traderDetails.totalTrades.toLocaleString()}</p>
+                <p>Sharpe Ratio: {traderDetails.sharpeRatio.toFixed(2)}</p>
+                <p>Max Drawdown: {traderDetails.maxDrawdown.toFixed(1)}%</p>
               </div>
               
+              {/* Bio section commented out as bio property doesn't exist in Trader interface
               {traderDetails.bio && (
                 <div className="trader-bio">
                   <h4>Bio</h4>
                   <p>{traderDetails.bio}</p>
                 </div>
               )}
+              */}
             </div>
           </div>
         )}
