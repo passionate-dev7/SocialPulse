@@ -9,7 +9,7 @@ import {
 import { apiClient, queryKeys } from '../utils/api';
 import { useWebSocket } from './useWebSocket';
 import { useCallback, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
+// import { toast } from 'react-hot-toast'; // Commented out as package not installed
 
 // Follow a trader with copy settings
 export const useFollowTrader = () => {
@@ -66,10 +66,10 @@ export const useFollowTrader = () => {
         queryKeys.copyTrading.followed(),
         context?.previousFollowed
       );
-      toast.error('Failed to follow trader');
+      console.error('Failed to follow trader');
     },
     onSuccess: (data) => {
-      toast.success(`Now following ${data.traderAddress}`);
+      console.log(`Now following ${data.traderAddress}`);
       
       // Invalidate related queries
       queryClient.invalidateQueries({
@@ -117,10 +117,10 @@ export const useUnfollowTrader = () => {
         queryKeys.copyTrading.followed(),
         context?.previousFollowed
       );
-      toast.error('Failed to unfollow trader');
+      console.error('Failed to unfollow trader');
     },
     onSuccess: (data, traderAddress) => {
-      toast.success(`Unfollowed ${traderAddress}`);
+      console.log(`Unfollowed ${traderAddress}`);
       
       queryClient.invalidateQueries({
         queryKey: queryKeys.copyTrading.followed(),
@@ -173,10 +173,10 @@ export const useUpdateCopySettings = () => {
         queryKeys.copyTrading.settings(context!.traderAddress),
         context?.previousSettings
       );
-      toast.error('Failed to update copy settings');
+      console.error('Failed to update copy settings');
     },
     onSuccess: () => {
-      toast.success('Copy settings updated');
+      console.log('Copy settings updated');
       queryClient.invalidateQueries({
         queryKey: queryKeys.copyTrading.followed(),
       });
