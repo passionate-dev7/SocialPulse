@@ -7,11 +7,12 @@ import {
   UsersIcon, 
   BriefcaseIcon,
   CogIcon,
-  BellIcon,
   UserCircleIcon,
   Bars3Icon,
-  XMarkIcon
+  XMarkIcon,
+  ArrowsUpDownIcon
 } from '@heroicons/react/24/outline';
+import NotificationCenter from './NotificationCenter';
 
 const Navigation: React.FC = () => {
   const router = useRouter();
@@ -19,6 +20,7 @@ const Navigation: React.FC = () => {
   
   const navigation = [
     { name: 'Home', href: '/', icon: HomeIcon },
+    { name: 'DeFi Hub', href: '/defi-hub', icon: ArrowsUpDownIcon },
     { name: 'Leaderboard', href: '/leaderboard', icon: ChartBarIcon },
     { name: 'Dashboard', href: '/dashboard', icon: CogIcon },
   ];
@@ -63,10 +65,13 @@ const Navigation: React.FC = () => {
 
           {/* Right side icons */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
-            <button className="p-2 text-gray-500 hover:text-gray-700 relative">
-              <BellIcon className="h-6 w-6" />
-              <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-            </button>
+            <NotificationCenter />
+            
+            <Link href="/notifications" legacyBehavior>
+              <a className="text-gray-500 hover:text-gray-700" title="Notification Settings">
+                <CogIcon className="h-6 w-6" />
+              </a>
+            </Link>
             
             <Link href="/settings" legacyBehavior>
             <div className="relative">

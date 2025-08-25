@@ -6,6 +6,8 @@ import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { useTraders } from '../hooks/useTraders';
 import { formatCurrency, formatPercentage, formatAddress, getPnLColor, getRiskColor } from '../utils/format';
+import { hlnamesService } from '@/services/hlnames-client';
+import { BatchNameResolver } from '@/components/NameResolver';
 import type { Trader } from '../types';
 
 interface LeaderboardPageProps {
@@ -239,180 +241,218 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ initialTraders }) => 
 
               {/* List View */}
               {viewMode === 'list' && (
-                <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          {[
-                            { key: 'rank', label: 'Rank' },
-                            { key: '', label: 'Trader' },
-                            { key: 'totalPnL', label: 'Total P&L' },
-                            { key: 'winRate', label: 'Win Rate' },
-                            { key: 'totalTrades', label: 'Trades' },
-                            { key: 'followersCount', label: 'Followers' },
-                            { key: 'sharpeRatio', label: 'Sharpe' },
-                            { key: '', label: 'Risk' },
-                            { key: '', label: 'Action' },
-                          ].map((header) => (
-                            <th
-                              key={header.key}
-                              className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                                header.key ? 'cursor-pointer hover:bg-gray-100' : ''
-                              }`}
-                              onClick={header.key ? () => handleSort(header.key as SortField) : undefined}
-                            >
-                              <div className="flex items-center gap-1">
-                                {header.label}
-                                {header.key && sortField === header.key && (
-                                  <svg className={`w-4 h-4 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                  </svg>
-                                )}
-                              </div>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredTraders.map((trader) => (
-                          <tr key={trader.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              #{trader.rank}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
+                <BatchNameResolver 
+                  addresses={filteredTraders.map(t => t.address)}
+                  render={(resolved) => (
+                    <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              {[
+                                { key: 'rank', label: 'Rank' },
+                                { key: '', label: 'Trader' },
+                                { key: 'totalPnL', label: 'Total P&L' },
+                                { key: 'winRate', label: 'Win Rate' },
+                                { key: 'totalTrades', label: 'Trades' },
+                                { key: 'followersCount', label: 'Followers' },
+                                { key: 'sharpeRatio', label: 'Sharpe' },
+                                { key: '', label: 'Risk' },
+                                { key: '', label: 'Action' },
+                              ].map((header) => (
+                                <th
+                                  key={header.key}
+                                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                                    header.key ? 'cursor-pointer hover:bg-gray-100' : ''
+                                  }`}
+                                  onClick={header.key ? () => handleSort(header.key as SortField) : undefined}
+                                >
+                                  <div className="flex items-center gap-1">
+                                    {header.label}
+                                    {header.key && sortField === header.key && (
+                                      <svg className={`w-4 h-4 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                      </svg>
+                                    )}
+                                  </div>
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {filteredTraders.map((trader) => {
+                              const nameData = resolved.get(trader.address);
+                              const displayName = nameData?.name || trader.username || 'Anonymous';
+                              const displayAvatar = nameData?.avatar || trader.avatar || '/default-avatar.png';
+                              
+                              return (
+                                <tr key={trader.id} className="hover:bg-gray-50">
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    #{trader.rank}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex items-center">
+                                      <div className="relative flex-shrink-0 h-10 w-10">
+                                        <img
+                                          className="h-10 w-10 rounded-full"
+                                          src={displayAvatar}
+                                          alt={displayName}
+                                          loading="lazy"
+                                          onError={(e) => {
+                                            e.currentTarget.src = '/default-avatar.png';
+                                          }}
+                                        />
+                                        {trader.verified && (
+                                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
+                                            <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="ml-4">
+                                        <div className="text-sm font-medium text-gray-900">
+                                          {displayName}
+                                          {nameData?.name && nameData.name.endsWith('.hl') && (
+                                            <span className="ml-1 text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded">
+                                              HL
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                          {formatAddress(trader.address)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${getPnLColor(trader.totalPnL)}`}>
+                                    {formatCurrency(trader.totalPnL)}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {formatPercentage(trader.winRate, 1)}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {trader.totalTrades.toLocaleString()}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {trader.followersCount.toLocaleString()}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {trader.sharpeRatio.toFixed(2)}
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getRiskColor(trader.riskScore)}`}>
+                                      {trader.riskScore}/10
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <Link
+                                      href={`/trader/${trader.address}`}
+                                      className="text-blue-600 hover:text-blue-700"
+                                    >
+                                      View Profile
+                                    </Link>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                />
+              )}
+
+              {/* Grid View */}
+              {viewMode === 'grid' && (
+                <BatchNameResolver 
+                  addresses={filteredTraders.map(t => t.address)}
+                  render={(resolved) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredTraders.map((trader) => {
+                        const nameData = resolved.get(trader.address);
+                        const displayName = nameData?.name || trader.username || 'Anonymous';
+                        const displayAvatar = nameData?.avatar || trader.avatar || '/default-avatar.png';
+                        
+                        return (
+                          <div key={trader.id} className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
+                            <div className="flex items-center justify-between mb-4">
                               <div className="flex items-center">
-                                <div className="relative flex-shrink-0 h-10 w-10">
+                                <div className="relative">
                                   <img
-                                    className="h-10 w-10 rounded-full"
-                                    src={trader.avatar || '/default-avatar.png'}
-                                    alt={trader.username || 'Trader'}
+                                    className="h-12 w-12 rounded-full"
+                                    src={displayAvatar}
+                                    alt={displayName}
                                     loading="lazy"
+                                    onError={(e) => {
+                                      e.currentTarget.src = '/default-avatar.png';
+                                    }}
                                   />
                                   {trader.verified && (
-                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
-                                      <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                       </svg>
                                     </div>
                                   )}
                                 </div>
-                                <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {trader.username || 'Anonymous'}
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    {formatAddress(trader.address)}
-                                  </div>
+                                <div className="ml-3">
+                                  <h3 className="text-lg font-medium text-gray-900">
+                                    {displayName}
+                                    {nameData?.name && nameData.name.endsWith('.hl') && (
+                                      <span className="ml-1 text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded">
+                                        HL
+                                      </span>
+                                    )}
+                                  </h3>
+                                  <p className="text-sm text-gray-500">Rank #{trader.rank}</p>
                                 </div>
                               </div>
-                            </td>
-                            <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${getPnLColor(trader.totalPnL)}`}>
-                              {formatCurrency(trader.totalPnL)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {formatPercentage(trader.winRate, 1)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {trader.totalTrades.toLocaleString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {trader.followersCount.toLocaleString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {trader.sharpeRatio.toFixed(2)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getRiskColor(trader.riskScore)}`}>
-                                {trader.riskScore}/10
+                                Risk: {trader.riskScore}/10
                               </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <Link
-                                href={`/trader/${trader.address}`}
-                                className="text-blue-600 hover:text-blue-700"
-                              >
-                                View Profile
-                              </Link>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* Grid View */}
-              {viewMode === 'grid' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredTraders.map((trader) => (
-                    <div key={trader.id} className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center">
-                          <div className="relative">
-                            <img
-                              className="h-12 w-12 rounded-full"
-                              src={trader.avatar || '/default-avatar.png'}
-                              alt={trader.username || 'Trader'}
-                              loading="lazy"
-                            />
-                            {trader.verified && (
-                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
+                            </div>
+                            
+                            <div className="space-y-3 mb-6">
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-600">Total P&L:</span>
+                                <span className={`font-semibold ${getPnLColor(trader.totalPnL)}`}>
+                                  {formatCurrency(trader.totalPnL)}
+                                </span>
                               </div>
-                            )}
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-600">Win Rate:</span>
+                                <span className="font-semibold text-gray-900">
+                                  {formatPercentage(trader.winRate, 1)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-600">Followers:</span>
+                                <span className="font-semibold text-gray-900">
+                                  {trader.followersCount.toLocaleString()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-600">Sharpe Ratio:</span>
+                                <span className="font-semibold text-gray-900">
+                                  {trader.sharpeRatio.toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <Link
+                              href={`/trader/${trader.address}`}
+                              className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-center transition-colors"
+                            >
+                              View Profile
+                            </Link>
                           </div>
-                          <div className="ml-3">
-                            <h3 className="text-lg font-medium text-gray-900">
-                              {trader.username || 'Anonymous'}
-                            </h3>
-                            <p className="text-sm text-gray-500">Rank #{trader.rank}</p>
-                          </div>
-                        </div>
-                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getRiskColor(trader.riskScore)}`}>
-                          Risk: {trader.riskScore}/10
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-3 mb-6">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Total P&L:</span>
-                          <span className={`font-semibold ${getPnLColor(trader.totalPnL)}`}>
-                            {formatCurrency(trader.totalPnL)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Win Rate:</span>
-                          <span className="font-semibold text-gray-900">
-                            {formatPercentage(trader.winRate, 1)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Followers:</span>
-                          <span className="font-semibold text-gray-900">
-                            {trader.followersCount.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-600">Sharpe Ratio:</span>
-                          <span className="font-semibold text-gray-900">
-                            {trader.sharpeRatio.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <Link
-                        href={`/trader/${trader.address}`}
-                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-center transition-colors"
-                      >
-                        View Profile
-                      </Link>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  )}
+                />
               )}
 
               {/* Empty State */}

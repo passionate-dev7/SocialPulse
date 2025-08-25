@@ -164,13 +164,60 @@ function generateMockTrader(index: number): Trader {
   const baseReturn = Math.random() * 200 - 50;
   const winRate = 45 + Math.random() * 40;
   
+  // Include the testooor.hl address as the first trader
+  const addresses = [
+    '0xF26F5551E96aE5162509B25925fFfa7F07B2D652', // testooor.hl - ALWAYS FIRST
+    '0x1c072e827e8458a9f33669435E7Ef1BeAed1234',
+    '0xea479f5ae20ec8a53b844Bc9e7595f0bEb234567',
+    '0x4976286c6f286ca9f33669435E7Ef1BeAed5678',
+    '0x22985fd7f3816a9f33669435E7Ef1BeAed9012',
+    '0x07b27400de5c8a53b844Bc9e7595f0bEb345678',
+    '0x48e01006789a53b844Bc9e7595f0bEb23456cde',
+    '0x976f2b782a53b844Bc9e7595f0bEb23456789f0',
+    '0x610Bb1573d1046FCb8A70Bbbd395754cD57C2b60',
+    '0x3563f416e720ffa53b844Bc9e7595f0bEb012345'
+  ];
+  
+  const usernames = [
+    'testooor', // Will be replaced by testooor.hl
+    'trader_2',
+    'trader_3', 
+    'trader_4',
+    'trader_5',
+    'trader_6',
+    'trader_7',
+    'trader_8',
+    'trader_9',
+    'trader_10'
+  ];
+  
+  // Use the index directly to ensure consistent ordering
+  // Always keep testooor.hl as the first address
+  let selectedAddress: string;
+  let selectedUsername: string;
+  
+  if (index === 0) {
+    // First trader is ALWAYS testooor.hl
+    selectedAddress = addresses[0];
+    selectedUsername = usernames[0];
+  } else if (index < addresses.length) {
+    // Use predefined addresses for consistency
+    selectedAddress = addresses[index];
+    selectedUsername = usernames[index] || `trader_${index + 1}`;
+  } else {
+    // Generate a consistent address based on index for any overflow
+    const hexIndex = (index + 1000).toString(16).padStart(8, '0');
+    selectedAddress = `0x${hexIndex}${'a'.repeat(32)}`.slice(0, 42);
+    selectedUsername = `trader_${index + 1}`;
+  }
+  
   return {
     id: `trader-${index + 1}`,
-    address: `0x${(index + 1).toString(16).padStart(40, '0')}`,
+    address: selectedAddress,
     name: `Elite Trader ${index + 1}`,
-    username: `trader_${index + 1}`, // Always defined
+    username: selectedUsername, // Always defined
     avatar: `https://api.dicebear.com/7.x/identicon/svg?seed=${index}`,
-    verified: Math.random() > 0.3,
+    verified: index === 0 || Math.random() > 0.3, // First trader (testooor) is always verified
     rank: index + 1,
     totalPnL: baseReturn * 10000,
     totalReturn: baseReturn,
