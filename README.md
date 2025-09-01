@@ -1,19 +1,9 @@
-# HyperTrade Pro - Advanced Trading Platform & Analytics Suite
+# SocialPulse - Advanced Trading Platform & Analytics Suite
 
 ## 🏆 Track: Hyperliquid Frontier
 
 ## 📋 Overview
 A comprehensive trading platform that combines real-time analytics, automated trading strategies, and ecosystem integrations. HyperTrade Pro empowers traders with professional tools while growing the Hyperliquid ecosystem through innovative features and community engagement.
-
-## 🎯 Targeted Bounties
-1. **HyperCore Liquidator Bot** - $2,000
-2. **HyperEVM Stablecoin tracking dashboard** - $2,500
-3. **Best use of GlueX Router API** - $7,000
-4. **Best use of Liquid Labs** - $7,000
-5. **Best showcase of identity with Hyperliquid Names (.hl)** - $2,000
-6. **Best use of GoldRush** - $2,000
-7. **Best use of HyperDrive** - $2,000
-8. **Track Prize Pool** - Up to $30,000 (1st place)
 
 ## 🚀 Key Features
 
